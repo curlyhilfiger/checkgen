@@ -2,6 +2,7 @@ from flask import jsonify, request, render_template, send_file
 
 from app.models import Printer, Check
 from app.services import pdf_service
+from app.tasks.background_generate import generate
 
 from app import app
 from app import db
@@ -23,7 +24,7 @@ def create_checks():
         
         if printers:
             
-            job = q.enqueue(background_check, data=data, printers=printers)
+            job = q.enqueue(generate, data=data)
             print(f'Task ({job.id}) added to queue at {job.enqueued_at}')
 
 
@@ -79,7 +80,6 @@ def check(api_key, id):
                 mimetype='application/pdf',
                 as_attachment=True
             )
-
         
         else:
             return jsonify({'error':'Данного чека не существует или файл не создан'}), 400
