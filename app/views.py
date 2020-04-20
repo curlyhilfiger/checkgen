@@ -86,37 +86,3 @@ def check(api_key, id):
 
     else:
         return jsonify({'error': 'Ошибка авторизации'}), 401
-    
-
-
-
-def background_check(data, printers):
-    
-    for printer in printers:
-
-        pdf_file = pdf_service.pdf(data, str(printer.check_type))
-
-        print(pdf_file)
-
-        check = Check(
-            order_id=data['id'],
-            printer=printer,
-            check_type=printer.check_type,
-            order=data,
-            status='rendered',
-            pdf_file=pdf_file
-        )
-        db.session.add(check)
-    
-    db.session.commit()
-    print('checks added')
-
-
-def is_created(order_id):
-
-    check = Check.query.filter_by(order_id=order_id).first()
-
-    if not check:
-        return False
-
-    return True
