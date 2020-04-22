@@ -2,8 +2,7 @@ from flask import jsonify, request, render_template, send_file
 
 from app.services import pdf_service, check_service, printer_service
 from app.tasks.background_generate import generate
-from app.utils.decorator import api_key_required, id_required
-
+from app.utils.decorator import api_key_required
 from app import app
 from app import db
 from app import q
