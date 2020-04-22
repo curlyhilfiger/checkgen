@@ -1,5 +1,4 @@
 from app.services import printer_service, pdf_service, check_service
-
 from app import db
 from app import app
 

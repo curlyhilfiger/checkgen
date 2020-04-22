@@ -1,18 +1,17 @@
 from app.models import Check
-
 from app import app
 
 
 def get_checks(printer_id):
 
-    checks = Check.query.filter_by(printer_id=printer_id)
+    checks = Check.query.filter_by(printer_id=printer_id, status='rendered').all()
 
     return checks
 
 
-def get_check(id):
+def get_check(id, printer_id):
 
-    check = Check.query.filter_by(id=id)
+    check = Check.query.filter_by(id=id, printer_id=printer_id).first()
 
     return check
 

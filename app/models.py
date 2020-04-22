@@ -9,6 +9,7 @@ class Printer(db.Model):
     point_id = db.Column(db.Integer)
     checks = db.relationship('Check', backref='printer')
 
+
 class Check(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, nullable=False)

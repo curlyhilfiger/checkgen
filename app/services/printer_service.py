@@ -1,6 +1,5 @@
 from app import db
 from app.models import Printer
-
 from app import app
 
 
@@ -13,7 +12,7 @@ def get_printers(point_id):
 
 def get_printer(api_key):
 
-    printer = Printer.query.filter_by(api_key=api_key)
+    printer = Printer.query.filter_by(api_key=api_key).first()
 
     return printer
 

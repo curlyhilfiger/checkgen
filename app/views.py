@@ -1,8 +1,8 @@
 from flask import jsonify, request, render_template, send_file
 
-from app.models import Printer, Check
-from app.services import pdf_service
+from app.services import pdf_service, check_service, printer_service
 from app.tasks.background_generate import generate
+from app.utils.decorator import api_key_required, id_required
 
 from app import app
 from app import db
@@ -17,10 +17,10 @@ def create_checks():
     if request.is_json:
         data = request.get_json()
 
-        if is_created(data['id']):
+        if check_service.is_created(data['order_id']):
             return jsonify({'error': 'Для данного заказа уже созданы чеки'}), 400
 
-        printers = Printer.query.filter_by(point_id=data['point_id']).all()
+        printers = printer_service.get_printers(data['point_id'])
         
         if printers:
             
@@ -35,54 +35,45 @@ def create_checks():
     return jsonify({'msg': 'no json recivied'})
 
 
-@app.route('/new_checks/<api_key>', methods=["GET"])
-def new_checks(api_key):
+@app.route('/new_checks', methods=['GET'])
+@api_key_required
+def new_checks(printer):
 
-    printer = Printer.query.filter_by(api_key=api_key).first()
+    checks = check_service.get_checks(printer.id)
 
-    if printer:
-        checks = Check.query.filter_by(printer_id=printer.id, status='rendered').all()
+    print(checks)
 
-        print(checks)
+    output = []
 
-        output = []
+    for check in checks:
 
-        for check in checks:
+        check_data = {}
+        check_data['id'] = check.id
+        output.append(check_data)
 
-            check_data = {}
-            check_data['id'] = check.id
-            output.append(check_data)
-
-        return jsonify({'msg': output})
-    
-    return jsonify({'error': 'Ошибка авторизации'}), 401
+    return jsonify({'msg': output})
 
 
-@app.route('/check/<api_key>/<id>')
-def check(api_key, id):
 
-    printer = Printer.query.filter_by(api_key=api_key).first()
+@app.route('/check/<id>', methods=['GET'])
+@api_key_required
+def check(printer, id):
 
-    if printer:
+    check = check_service.get_check(id, printer_id=printer.id)
 
-        check = Check.query.filter_by(id=id, printer=printer).first()
+    if check:
 
-        if check:
+        filename = check.pdf_file
 
-            filename = check.pdf_file
-
-            check.status = 'printed'
-            db.session.commit()
+        check.status = 'printed'
+        db.session.commit()
 
             
-            return send_file(
-                filename_or_fp=filename,
-                mimetype='application/pdf',
-                as_attachment=True
-            )
+        return send_file(
+            filename_or_fp=filename,
+            mimetype='application/pdf',
+            as_attachment=True
+        )
         
-        else:
-            return jsonify({'error':'Данного чека не существует или файл не создан'}), 400
-
     else:
-        return jsonify({'error': 'Ошибка авторизации'}), 401
+        return jsonify({'error':'Данного чека не существует или файл не создан'}), 400

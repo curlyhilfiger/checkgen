@@ -1,3 +1,6 @@
 {
-    "python.pythonPath": "/home/vlad/.virtualenvs/todo/bin/python3.6"
+    "python.pythonPath": "/home/vlad/.virtualenvs/todo/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pep8Enabled": true,
 }
