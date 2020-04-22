@@ -3,13 +3,21 @@ from app import app
 
 
 def get_checks(printer_id):
+    """
+    Returns list of check objects from db
+    """
 
-    checks = Check.query.filter_by(printer_id=printer_id, status='rendered').all()
+    checks = Check.query.filter_by(
+        printer_id=printer_id, status='rendered'
+    ).all()
 
     return checks
 
 
 def get_check(id, printer_id):
+    """
+    Return single check object from db
+    """
 
     check = Check.query.filter_by(id=id, printer_id=printer_id).first()
 
@@ -17,6 +25,9 @@ def get_check(id, printer_id):
 
 
 def create_check(data, printer, pdf_file):
+    """
+    Creates checks object and return it
+    """
 
     check = Check(
         order_id=data['id'],
@@ -31,6 +42,9 @@ def create_check(data, printer, pdf_file):
 
 
 def is_created(order_id):
+    """
+    Check object was created or not
+    """
 
     check = Check.query.filter_by(order_id=order_id).first()
 

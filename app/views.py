@@ -14,23 +14,29 @@ import pypandoc
 
 @app.route('/create_checks', methods=['POST'])
 def create_checks():
+
     if request.is_json:
         data = request.get_json()
 
         if check_service.is_created(data['order_id']):
-            return jsonify({'error': 'Для данного заказа уже созданы чеки'}), 400
+            response = {
+                'error': 'Для данного заказа уже созданы чеки'
+            }
+            return jsonify(response), 401
 
         printers = printer_service.get_printers(data['point_id'])
-        
         if printers:
-            
+
             job = q.enqueue(generate, data=data)
             print(f'Task ({job.id}) added to queue at {job.enqueued_at}')
 
+            response = {'ok': 'Чеки успешно созданы'}
+            return jsonify(response)
 
-            return jsonify({'ok':'Чеки успешно созданы'})
-
-        return jsonify({'msg':'Для данной точки не настроено ни одного принтера'})
+        response = {
+            'msg': 'Для данной точки не настроено ни одного принтера'
+        }
+        return jsonify(response), 401
 
     return jsonify({'msg': 'no json recivied'})
 
@@ -54,7 +60,6 @@ def new_checks(printer):
     return jsonify({'msg': output})
 
 
-
 @app.route('/check/<id>', methods=['GET'])
 @api_key_required
 def check(printer, id):
@@ -68,12 +73,14 @@ def check(printer, id):
         check.status = 'printed'
         db.session.commit()
 
-            
         return send_file(
             filename_or_fp=filename,
             mimetype='application/pdf',
-            as_attachment=True
+            as_attachment=True,
         )
-        
     else:
-        return jsonify({'error':'Данного чека не существует или файл не создан'}), 400
+
+        response = {
+            'error': 'Данного чека не существует или файл не создан'
+        }
+        return jsonify(response), 400

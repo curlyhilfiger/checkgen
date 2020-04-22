@@ -4,6 +4,10 @@ from app import app
 
 
 def generate(data):
+    """
+    Background task which generate pdf file
+    for each printer type in point.
+    """
 
     printers = printer_service.get_printers(data['point_id'])
 
@@ -14,7 +18,7 @@ def generate(data):
         check = check_service.create_check(data, printer, pdf_file)
 
         db.session.add(check)
-    
+
     db.session.commit()
 
     print('checks added')
